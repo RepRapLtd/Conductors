@@ -1,2 +1,2 @@
 # Conductors
-Experiments wit 3D printing conducting filament
+Experiments with 3D printing conducting filament
