@@ -15,7 +15,7 @@ import math as maths
 pins = 8
 pinPitch = 2.54
 trackWidth = 1.5
-trackDepth = 2
+trackDepth = 4
 projection = 4
 chipDepth = 7.3
 
@@ -59,28 +59,35 @@ def Track(track):
   result = result.fuse(Corner(p1))
  return result
 
-def ChipBlock():
+def ChipBlock(pins, width):
  holeWidth = width + 2
  holeDepth = (pins/2)*pinPitch
- result = Part.makeBox(holeWidth, holeDepth, chipDepth + 1)
+ z = (chipDepth + 1)*2
+ result = Part.makeBox(holeWidth, holeDepth, z)
  result.translate(Base.Vector(-0.5*holeWidth, -0.5*holeDepth, -chipDepth))
- c = Part.makeCylinder(trackWidth, chipDepth*2 + 4)
+ c = Part.makeCylinder(2.2, chipDepth*2 + 4)
  c.translate(Base.Vector(0, 0, -chipDepth*2 -2))
  result = result.fuse(c)
- return b
+ c = Part.makeCylinder(trackWidth, z)
+ c.translate(Base.Vector(0, holeDepth/2, -chipDepth))
+ result = result.fuse(c)
+ return result
 
 def ChipTracks(pins, width):
+ w = width + 0.5
  if pins%2 != 0:
   print("Chip does not have an even number of pins!")
  result = NullSet()
- for pin in range(round(pins/2)):
+ pins2 = round(pins/2)
+ for pin in range(pins2):
   y = pin*pinPitch
   p0=((0, y), False)
   p1=((-2*pinPitch, y), True)
   result = result.fuse(Track((p0, p1)))
-  p0=((width, y), False)
-  p1=((width + 2*pinPitch, y), True)
+  p0=((w, y), False)
+  p1=((w + 2*pinPitch, y), True)
   result = result.fuse(Track((p0, p1))) 
+ result.translate(Base.Vector(-0.5*w, -0.5*(pins2 - 1)*pinPitch, 0))
  return result 
 
 def AddPin(n):
@@ -95,6 +102,7 @@ track.append(((20,-30),1))
 track.append(((-10,-10),1))
 track.append(((-5,-5),1))
 
-b = Track(track)
-#c = ChipTracks(8, 3*pinPitch)
-Part.show(b) 
+b = ChipBlock(14, 3*pinPitch)
+Part.show(b)
+c = ChipTracks(14, 3*pinPitch)
+Part.show(c) 
