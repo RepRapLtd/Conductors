@@ -54,6 +54,7 @@ trackChamfer = 1  # To allow tracks to be printed without support
 wire = 0.8         # The diameter of, say, a resistor lead
 cavityD = 1        # How much below the surface the tracks stop. Prevents the head smearing them together when printing the final layer.
 viaDia = 2         # The outer diameter of a via/pin hole for a component lead.
+runOut = 2*pinPitch - 1 # Chip lead length
 
 # FreeCAD needs a better way to make the null set...
 
@@ -153,6 +154,11 @@ def Track(points, depth):
   corner = Corner(p1, depth)
   track = track.fuse(corner[0])
   cavity = cavity.fuse(corner[1])
+ if join == 2:
+  tsc = ComponentPin(p0, depth)
+  track = track.fuse(tsc[0])
+  cavity = cavity.fuse(tsc[1])
+  cuts = cuts.fuse(tsc[2]) 
  return (track, cavity, cuts)
 
 # Internal function to make the cavity in which a DIL chip will fit
@@ -184,12 +190,12 @@ def DILChip(pins, width, depth):
  for pin in range(pins2):
   y = pin*pinPitch
   p0=((0, y), 5)
-  p1=((-2*pinPitch, y), 1)
+  p1=((-runOut, y), 1)
   t = Track((p0, p1), depth)
   track = track.fuse(t[0])
   cavity = cavity.fuse(t[1])
   p0=((w, y), 5)
-  p1=((w + 2*pinPitch, y), 1)
+  p1=((w + runOut, y), 1)
   t = Track((p0, p1), depth)
   track = track.fuse(t[0])
   cavity = cavity.fuse(t[1]) 
@@ -202,64 +208,65 @@ def AddPin(n):
  x = 1
 
 
+
+
 tracks = []
 track = []
-track.append(((-3.69,-10.11),2))
-track.append(((-9.69,-10.11),1))
-track.append(((-13.73,-6.07),1))
-track.append(((-13.73,-1.27),1))
-track.append(((-8.25,-0.969999999999999),0))
+track.append(((-3.69,10.11),2))
+track.append(((-9.69,10.11),1))
+track.append(((-13.73,6.07),1))
+track.append(((-13.73,1.27),1))
+track.append(((-8.25,1.27),0))
 tracks.append(track)
 track = []
-track.append(((-3.91,13.29),2))
-track.append(((-13.49,13.29),1))
-track.append(((-14.09,12.69),1))
-track.append(((-14.09,-0.91),0))
+track.append(((-3.91,-13.29),2))
+track.append(((-13.49,-13.29),1))
+track.append(((-13.73,-12.69),1))
+track.append(((-13.73,1.27),1))
 tracks.append(track)
 track = []
-track.append(((0.91,8.39),2))
-track.append(((-6.85,8.39),1))
-track.append(((-8.17,3.81),1))
-track.append(((-8.17,7.07),0))
+track.append(((0.91,-8.39),2))
+track.append(((-6.85,-8.39),1))
+track.append(((-8.17,-7.07),1))
+track.append(((-8.17,-3.81),0))
 tracks.append(track)
 track = []
-track.append(((3.71,13.29),2))
-track.append(((8.81,13.29),1))
-track.append(((11.41,10.69),2))
+track.append(((3.71,-13.29),2))
+track.append(((8.81,-13.29),1))
+track.append(((11.41,-10.69),2))
 tracks.append(track)
 track = []
-track.append(((11.41,10.69),0))
-track.append(((14.71,10.69),1))
-track.append(((14.71,4.69),1))
-track.append(((13.83,3.81),1))
-track.append(((8.09,3.81),0))
+track.append(((11.41,-10.69),0))
+track.append(((14.71,-10.69),1))
+track.append(((14.71,-4.69),1))
+track.append(((13.83,-3.81),1))
+track.append(((8.09,-3.81),0))
 tracks.append(track)
 track = []
-track.append(((8.13,1.27),0))
-track.append(((11.59,1.27),1))
-track.append(((13.91,-0.709999999999997),0))
+track.append(((8.13,-1.27),0))
+track.append(((11.59,-1.27),1))
+track.append(((11.93,-1.27),1))
+track.append(((13.91,0.709999999999997),2))
 tracks.append(track)
 track = []
-track.append(((8.17,-1.27),0))
-track.append(((15.21,-6.31),1))
-track.append(((15.21,-10.31),1))
-track.append(((11.11,-6.71),2))
+track.append(((8.17,1.27),0))
+track.append(((10.17,1.27),1))
+track.append(((15.21,6.31),1))
+track.append(((15.21,10.31),1))
+track.append(((11.11,10.41),0))
 tracks.append(track)
 track = []
-track.append(((8.17,-1.27),0))
-track.append(((10.17,-1.27),1))
-track.append(((15.21,-6.31),1))
-track.append(((15.21,43.69),1))
-track.append(((11.11,-10.41),2))
+track.append(((3.93,10.11),2))
+track.append(((11.11,10.41),2))
 tracks.append(track)
 track = []
-track.append(((3.93,-10.11),2))
-track.append(((10.81,-10.11),2))
+track.append(((5.91,-8.39),2))
+track.append(((11.41,-8.15),2))
 tracks.append(track)
 track = []
-track.append(((8.21,-3.81),0))
-track.append(((11.11,-6.71),1))
-track.append(((11.11,-7.91),2))
+track.append(((8.21,3.81),0))
+track.append(((11.11,6.71),1))
+track.append(((11.11,7.91),2))
 tracks.append(track)
 
 finalTrack = nullSet
@@ -278,7 +285,7 @@ Part.show(finalTrack)
 
 '''
 
-t = DILChip(14, 3*pinPitch, trackDepth)
+t = DILChip(8, 3*pinPitch, trackDepth)
 tr = t[0]
 
 Part.show(tr) 
